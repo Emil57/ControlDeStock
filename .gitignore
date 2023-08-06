@@ -1,0 +1,18 @@
+# Ignore compiled bytecode files
+*.class
+
+# Ignore build output directories
+/bin/
+/target/
+
+# Ignore IDE-specific files
+.classpath
+.project
+.settings/
+
+# Ignore log files
+*.log
+
+# Ignore dependency directories (Maven, Gradle, etc.)
+/.gradle/
+/.m2/
