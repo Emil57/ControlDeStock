@@ -30,9 +30,10 @@ public class ProductoController {
         statement.setInt(3, cantidad);
         statement.setInt(4, id);
 
-        
         statement.execute();
-        return statement.getUpdateCount();
+        int updateCount = statement.getUpdateCount();
+        con.close();
+		return updateCount;
 	}
 
 	public int eliminar(Integer id) throws SQLException {
@@ -40,7 +41,9 @@ public class ProductoController {
         PreparedStatement statement = con.prepareStatement("DELETE FROM PRODUCTO WHERE ID = ?");
         statement.setInt(1, id);
         statement.execute();
-        return statement.getUpdateCount();
+        int updateCount = statement.getUpdateCount();
+        con.close();
+        return updateCount;
 	}
 
 	public List<Map<String, String>> listar() throws SQLException {
@@ -65,13 +68,38 @@ public class ProductoController {
 	}
 
     public void guardar(Map<String, String> producto) throws SQLException {
+    	String nombre = producto.get("NOMBRE");
+    	String descripcion = producto.get("DESCRIPCION");
+    	Integer cantidad = Integer.valueOf(producto.get("CANTIDAD"));
+    	Integer maximaCantidad = 50; 
+    	
     	Connection con = new ConnectionFactory().recuperarConexion();
+    	con.setAutoCommit(false);
     	PreparedStatement statement = con.prepareStatement("INSERT INTO PRODUCTO(nombre, descripcion, cantidad)"
     			+ "VALUES (?, ?, ?)",
     			Statement.RETURN_GENERATED_KEYS);
-    	statement.setString(1, producto.get("NOMBRE"));
-    	statement.setString(2, producto.get("DESCRIPCION"));
-    	statement.setInt(3, Integer.valueOf(producto.get("CANTIDAD")));
+    	try {
+	    	do {
+	    		int cantidadParaGuardar = Math.min(cantidad, maximaCantidad);
+	    		ejecutaRegistro(nombre, descripcion, cantidadParaGuardar, statement);
+	    		cantidad-=maximaCantidad;
+	    	} while(cantidad > 0);
+	    	
+	    	con.commit();
+    	} catch(Exception e) {
+    		con.rollback();
+    	}
+    	
+    	statement.close();
+    	con.close();
+
+    }
+
+	private void ejecutaRegistro(String nombre, String descripcion, Integer cantidad, PreparedStatement statement)
+			throws SQLException {
+		statement.setString(1, nombre);
+		statement.setString(2, descripcion);
+		statement.setInt(3, cantidad);
     	statement.execute();
     	
     	ResultSet resultSet = statement.getGeneratedKeys();
@@ -79,6 +107,6 @@ public class ProductoController {
     	while(resultSet.next()) {
     		System.out.println(String.format("ID --> %d", resultSet.getInt(1)));    		
     	}
-    }
+	}
 
 }
