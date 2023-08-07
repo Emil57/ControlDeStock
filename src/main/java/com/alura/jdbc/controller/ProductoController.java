@@ -8,24 +8,35 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import com.alura.jdbc.factory.ConnectionFactory;
+
 import java.util.HashMap;
 
 
 public class ProductoController {
 
-	public void modificar(String nombre, String descripcion, Integer id) {
-		// TODO
+	public int modificar(String nombre, String descripcion, Integer cantidad, Integer id) throws SQLException {
+        Connection con = new ConnectionFactory().recuperarConexion();
+        Statement statement = con.createStatement();
+        statement.execute("UPDATE PRODUCTO SET " 
+        + "NOMBRE = '" + nombre + "',"
+        + "DESCRIPCION = '" + descripcion + "',"
+        + "CANTIDAD = " + cantidad
+        + " WHERE ID = " + id);
+        return statement.getUpdateCount();
 	}
 
-	public void eliminar(Integer id) {
-		// TODO
+	public int eliminar(Integer id) throws SQLException {
+        Connection con = new ConnectionFactory().recuperarConexion();
+        Statement statement = con.createStatement();
+        statement.execute("DELETE FROM PRODUCTO WHERE ID = " + id);
+        return statement.getUpdateCount();
 	}
 
 	public List<Map<String, String>> listar() throws SQLException {
-		Connection con = DriverManager.getConnection(
-				"jdbc:mysql://localhost/control_de_stock?useTimeZone=true&serverTimeZone=UTC",
-				"root",
-				"");
+        Connection con = new ConnectionFactory().recuperarConexion();
+
 		Statement statement = con.createStatement();
 		statement.execute("SELECT ID, NOMBRE, DESCRIPCION, CANTIDAD FROM PRODUCTO");
 		ResultSet resultSet = statement.getResultSet();
@@ -44,8 +55,19 @@ public class ProductoController {
 		return resultado;
 	}
 
-    public void guardar(Object producto) {
-		// TODO
-	}
+    public void guardar(Map<String, String> producto) throws SQLException {
+    	Connection con = new ConnectionFactory().recuperarConexion();
+    	Statement statement = con.createStatement();
+    	statement.execute("INSERT INTO PRODUCTO (nombre, descripcion, cantidad) "
+    			+ "VALUES('" + producto.get("NOMBRE") + "', '"
+    			+ producto.get("DESCRIPCION") + "', "
+    			+ producto.get("CANTIDAD") + ")", Statement.RETURN_GENERATED_KEYS);
+    	
+    	ResultSet resultSet = statement.getGeneratedKeys();
+    	
+    	while(resultSet.next()) {
+    		System.out.println(String.format("ID --> %d", resultSet.getInt(1)));    		
+    	}
+    }
 
 }
