@@ -23,8 +23,8 @@ public class ProductoDAO {
     	try(con){    		
         	final PreparedStatement statement = con.prepareStatement(
         			"INSERT INTO PRODUCTO "
-        			+ "(nombre, descripcion, cantidad)"
-        			+ "VALUES (?, ?, ?)",
+        			+ "(nombre, descripcion, cantidad, categoria_id)"
+        			+ "VALUES (?, ?, ?, ?)",
         			Statement.RETURN_GENERATED_KEYS);
         	
         	try(statement) {
@@ -41,6 +41,7 @@ public class ProductoDAO {
 		statement.setString(1, producto.getNombre());
 		statement.setString(2, producto.getDescripcion());
 		statement.setInt(3, producto.getCantidad());
+		statement.setInt(4, producto.getCategoriaId());
     	statement.execute();
     	
     	final ResultSet resultSet = statement.getGeneratedKeys();
@@ -76,6 +77,48 @@ public class ProductoDAO {
         		}
         		return resultado;
             }
+        } catch(SQLException e) {
+        	throw new RuntimeException(e);
+        }
+	}
+
+	public int modificar(String nombre, String descripcion, Integer cantidad, Integer id) {        
+        try{
+        	final PreparedStatement statement = con.prepareStatement("UPDATE PRODUCTO SET " 
+                    + "NOMBRE = ?,"
+                    + "DESCRIPCION = ?,"
+                    + "CANTIDAD = ? "
+                    + "WHERE ID = ?");
+            
+        	try(statement){
+        		statement.setString(1, nombre);
+                statement.setString(2, descripcion);
+                statement.setInt(3, cantidad);
+                statement.setInt(4, id);
+
+                statement.execute();
+                int updateCount = statement.getUpdateCount();
+        		return updateCount;
+        	} 
+        } catch(SQLException e) {
+    		throw new RuntimeException(e);
+    	}
+        
+	}
+
+	public int eliminar(Integer id) {
+       
+		try{
+        	
+        	final PreparedStatement statement = con.prepareStatement("DELETE FROM PRODUCTO WHERE ID = ?");
+            
+        	try(statement){
+        		
+        		statement.setInt(1, id);
+                statement.execute();
+                int updateCount = statement.getUpdateCount();
+                return updateCount;
+        	}
         } catch(SQLException e) {
         	throw new RuntimeException(e);
         }
