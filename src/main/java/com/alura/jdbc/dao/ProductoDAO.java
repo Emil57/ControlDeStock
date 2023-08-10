@@ -75,11 +75,11 @@ public class ProductoDAO {
         					resultSet.getInt("CANTIDAD"));
         			resultado.add(fila);
         		}
-        		return resultado;
             }
         } catch(SQLException e) {
         	throw new RuntimeException(e);
         }
+		return resultado;
 	}
 
 	public int modificar(String nombre, String descripcion, Integer cantidad, Integer id) {        
@@ -122,6 +122,39 @@ public class ProductoDAO {
         } catch(SQLException e) {
         	throw new RuntimeException(e);
         }
+	}
+
+	public List<Producto> listar(Integer categoriaId) {
+		List<Producto> resultado = new ArrayList<>();
+		final Connection con = new ConnectionFactory().recuperarConexion();
+        
+        try(con){
+        	 
+    		final PreparedStatement statement = con.prepareStatement("SELECT ID, NOMBRE, DESCRIPCION, CANTIDAD "
+    				+ "FROM PRODUCTO "
+    				+ "WHERE CATEGORIA_ID = ?");
+    		
+    		try(statement){
+        		
+    			statement.setInt(1,categoriaId);
+    			statement.execute();
+        		ResultSet resultSet = statement.getResultSet();
+        		
+        		
+        		while(resultSet.next()) {
+        			Producto fila = new Producto(
+        					resultSet.getInt("ID"),
+        					resultSet.getString("NOMBRE"),
+        					resultSet.getString("DESCRIPCION"),
+        					resultSet.getInt("CANTIDAD"));
+        			resultado.add(fila);
+        		}
+            }
+        } catch(SQLException e) {
+        	throw new RuntimeException(e);
+        }
+		return resultado;
+		
 	}
 	
 	
